@@ -31,6 +31,8 @@ public class MainActivity extends Activity implements View.OnTouchListener, Sens
     private ImageView raquet;
     private Sensor mLight;
     private float coord_x;
+    private Handler mHandler ;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,6 +74,8 @@ public class MainActivity extends Activity implements View.OnTouchListener, Sens
         anim.setDuration(speed);
         anim.setFillAfter( true );
         image.startAnimation(anim);
+        mHandler = new Handler();
+        mHandler.postDelayed(mUpdateTimeTask, speed);
     }
 
     @Override
@@ -131,6 +135,12 @@ public class MainActivity extends Activity implements View.OnTouchListener, Sens
         super.onPause();
         mSensorMgr.unregisterListener(this);
     }
+
+    private Runnable mUpdateTimeTask = new Runnable() {
+        public void run() {
+            Log.d("position" , ""+image.getWidth());
+        }
+    };
 
 
 }
