@@ -1,8 +1,13 @@
 package m2dl.com.defiandroid;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Point;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Handler;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -17,14 +22,15 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 
-public class MainActivity extends Activity implements View.OnTouchListener{
+public class MainActivity extends Activity implements View.OnTouchListener, SensorEventListener {
 
     private int screenWidth;
     private int screenHeight;
-    private int _xDelta;
-    private int _yDelta;
     private ImageView image;
-    private Handler mHandler ;
+    private SensorManager mSensorMgr;
+    private ImageView raquet;
+    private Sensor mLight;
+    private float coord_x;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,8 +43,9 @@ public class MainActivity extends Activity implements View.OnTouchListener{
         screenWidth = (size.x);
         screenHeight = size.y - 500;
         image.setOnTouchListener(this);
-        Log.d("Debut",screenWidth + " "  + screenHeight + " "+ image.getWidth());
-
+        raquet = (ImageView) findViewById (R.id.raquet);
+        mSensorMgr = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mLight = mSensorMgr.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
     }
 
     public boolean onTouch(View v, MotionEvent event) {
@@ -88,4 +95,42 @@ public class MainActivity extends Activity implements View.OnTouchListener{
 
         return super.onOptionsItemSelected(item);
     }
+    @Override
+    public void onAccuracyChanged(Sensor arg0, int arg1) {
+
+
+    }
+
+    public void move(float x){
+        coord_x = raquet.getX() + (x*200);
+        if(coord_x <= 0 ) {
+            coord_x = 0;
+        } else if (coord_x >= screenWidth) {
+            coord_x = screenWidth - raquet.getWidth();
+        }
+        raquet.setX(coord_x);
+
+
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        float lat = event.values[0];
+        move(lat);
+
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        mSensorMgr.registerListener(this, mLight, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        mSensorMgr.unregisterListener(this);
+    }
+
+
 }
