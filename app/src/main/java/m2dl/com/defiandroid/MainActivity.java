@@ -20,6 +20,8 @@ public class MainActivity extends Activity {
     BluetoothAdapter mBluetoothAdapter;
     BluetoothDevice htcDada;
     BluetoothDevice htcC;
+    BluetoothDevice nexusDevice;
+    BluetoothDevice oneplusDevice;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +57,7 @@ public class MainActivity extends Activity {
                 for (BluetoothDevice device : pairedDevices) {
                     //Affichage des devices pairés
                     s += "NAME:" + device.getName() + "\n" + "adress:" + device.getAddress() + "\n";
+                    System.out.println(s);
 //                    //Je cherche celui dont j'ai besoin (en fait les 2 tel avec lesquels j'ai testé
 //                    if (device.getName().equals("HTC Dada")) {
 //                        System.out.println("HTDADA FOUND");
@@ -65,8 +68,11 @@ public class MainActivity extends Activity {
 //                        System.out.println("HTCC FOUND");
 //                    }
                       if (device.getName().equals("Galaxy Nexus 2")) {
+                          this.nexusDevice = device;
                           clientBT(findViewById(R.id.tvt));
-                      } else {
+                      }
+                      if (device.getName().equals("OnePlus One")) {
+                          this.oneplusDevice=device;
                           serverBT(findViewById(R.id.tvt));
                       }
 
@@ -88,12 +94,12 @@ public class MainActivity extends Activity {
     //Lancement du client
     public void clientBT(View view) {
         Log.i("ClientBT", "Starting client");
-        if (this.htcDada == null) {
+        if (this.nexusDevice == null) {
             Log.e("ClientBT", "Device is null");
         } else {
-            System.out.println(this.htcDada.toString());
+            System.out.println(this.nexusDevice.toString());
         }
-        BluetoothClient btclient = new BluetoothClient(this.htcDada, mBluetoothAdapter); //le client est HTCC
+        BluetoothClient btclient = new BluetoothClient(this.nexusDevice, mBluetoothAdapter); //le client est HTCC
         btclient.start();
     }
 
