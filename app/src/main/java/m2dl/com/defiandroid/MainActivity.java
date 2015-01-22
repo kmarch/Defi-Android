@@ -2,27 +2,28 @@ package m2dl.com.defiandroid;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.graphics.Point;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Handler;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
 
-public class MainActivity extends Activity implements View.OnTouchListener, SensorEventListener {
+public class MainActivity extends Activity implements View.OnClickListener, SensorEventListener {
 
     private int screenWidth;
     private int screenHeight;
@@ -32,7 +33,13 @@ public class MainActivity extends Activity implements View.OnTouchListener, Sens
     private Sensor mLight;
     private float coord_x;
     private Handler mHandler ;
-
+    private int position[] = new int[2];
+    private int [] destination = new int[2];
+    private int [] originalPosition = new int[2];
+    private Double depX;
+    private Double depY;
+    private int depXtest;
+    private int depYtest;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,15 +51,16 @@ public class MainActivity extends Activity implements View.OnTouchListener, Sens
         image = (ImageView) findViewById (R.id.ball);
         screenWidth = (size.x);
         screenHeight = size.y - 500;
-        image.setOnTouchListener(this);
+        image.setOnClickListener(this);
         raquet = (ImageView) findViewById (R.id.raquet);
         mSensorMgr = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mLight = mSensorMgr.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
     }
 
-    public boolean onTouch(View v, MotionEvent event) {
-        launch(-6000,-2000, 3000);
-        return true;
+    public void onClick(View v) {
+        image.getLocationOnScreen(position);
+        launch(500,2000, 3000);
+        raquet.setY(screenHeight);
     }
 
     public void launch(int toX, int toY, int speed ) {
@@ -66,16 +74,88 @@ public class MainActivity extends Activity implements View.OnTouchListener, Sens
         } else if (toY >= screenHeight){
             toY = screenHeight;
         }
-        int originalPos[] = new int[2];
-        image.getLocationOnScreen( originalPos );
+        image.getLocationOnScreen(position);
 
-        TranslateAnimation anim = new TranslateAnimation( 0, toX - originalPos[0],
-                0, toY - originalPos[1]);
+        TranslateAnimation anim = new TranslateAnimation( 0, toX - position[0],
+                0, toY - position[1]);
+        originalPosition[0] = position[0];
+        originalPosition[1] = position[1];
+        position[0] = toX;
+        position[1] = toY;
+
         anim.setDuration(speed);
         anim.setFillAfter( true );
         image.startAnimation(anim);
         mHandler = new Handler();
-        mHandler.postDelayed(mUpdateTimeTask, speed);
+        anim.setAnimationListener(
+                new Animation.AnimationListener() {
+
+                    @Override
+                    public void onAnimationStart(Animation animation) {}
+
+                    @Override
+                    public void onAnimationRepeat(Animation animation) {}
+
+                    @Override
+                    public void onAnimationEnd(Animation animation) {
+                        int [] raquetPosition = new int[2];
+                        raquet.getLocationOnScreen(raquetPosition);
+                        int  leftBorder = raquetPosition[0] - raquet.getWidth()/2;
+                        int rightBorder = raquetPosition[0] + raquet.getWidth()/2;
+
+                        //  barre
+                        if(position[0] <= rightBorder && position[0] >= leftBorder) {
+                            Log.d("touch", "touchéé");
+
+                            //Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                            // Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+                            //r.play();
+                            depX = 3000*Math.cos(45);
+                            depXtest = depX.intValue();
+                            depY = -3000*Math.sin(45);
+                            depYtest = depY.intValue();
+                            Log.d("la", position[0] + depXtest + "");
+                            image.setX(position[0]);
+                            image.setY(position[1]);
+                            launch(originalPosition[0] + depXtest,originalPosition[1] + depYtest,3000);
+                        }  else  if (position[0] >= screenWidth - image.getWidth()){//mur droite
+                            Log.d("lol" , position[0] + " ici " + position[1] );
+                            depX = -3000*Math.cos(135);
+                            depXtest = depX.intValue();
+                            depY = 3000*Math.sin(45);
+                            depYtest = depY.intValue();
+                            image.setX(position[0]);
+                            image.setY(position[1]);
+                            launch(originalPosition[0] + depXtest,originalPosition[1] + depYtest, 3000);
+                        } else if (position[0] <=   0) {//mur gauche
+                            Log.d("la" , position[0] + " ici " + position[1] );
+                            depX = -3000*Math.cos(45);
+                            depXtest = depX.intValue();
+                            depY = 3000*Math.sin(45);
+                            depYtest = depY.intValue();
+                            image.setX(position[0]);
+                            image.setY(position[1]);
+                            launch(originalPosition[0] + depXtest,originalPosition[1] + depYtest, 3000);
+                        } else if(position[1] <= 0) {// haut
+
+                            Log.d("merde" , position[0] + " ici " + position[1] );
+                            depX = 3000*Math.cos(45);
+                            depXtest = depX.intValue();
+                            depY = -3000*Math.sin(45);
+                            depYtest = depY.intValue();
+                            image.setX(position[0]);
+                            image.setY(position[1]);
+                            launch(originalPosition[0] + depXtest,originalPosition[1] + depYtest, 3000);
+                        }
+                        else{
+                            ((Vibrator) getSystemService(Context.VIBRATOR_SERVICE)).vibrate(500);
+                        }
+
+                    }
+                }
+        );
+//        mHandler.postDelayed(mUpdateTimeTask, speed);
+
     }
 
     @Override
@@ -119,7 +199,7 @@ public class MainActivity extends Activity implements View.OnTouchListener, Sens
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        float lat = event.values[0];
+        float lat = event.values[1];
         move(lat);
 
     }
@@ -135,12 +215,5 @@ public class MainActivity extends Activity implements View.OnTouchListener, Sens
         super.onPause();
         mSensorMgr.unregisterListener(this);
     }
-
-    private Runnable mUpdateTimeTask = new Runnable() {
-        public void run() {
-            Log.d("position" , ""+image.getWidth());
-        }
-    };
-
 
 }
