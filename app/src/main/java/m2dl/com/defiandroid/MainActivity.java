@@ -22,6 +22,8 @@ import android.view.animation.Animation;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 
+import java.util.Random;
+
 
 public class MainActivity extends Activity implements View.OnClickListener, SensorEventListener {
 
@@ -40,6 +42,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Sens
     private Double depY;
     private int depXtest;
     private int depYtest;
+    private Random random;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +58,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Sens
         raquet = (ImageView) findViewById (R.id.raquet);
         mSensorMgr = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mLight = mSensorMgr.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+
+        random =  new Random();
     }
 
     public void onClick(View v) {
@@ -107,12 +112,13 @@ public class MainActivity extends Activity implements View.OnClickListener, Sens
                         if(position[0] <= rightBorder && position[0] >= leftBorder) {
                             Log.d("touch", "touchéé");
 
-                            //Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-                            // Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
-                            //r.play();
-                            depX = 3000*Math.cos(45);
+                            Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+                            Ringtone r = RingtoneManager.getRingtone(getApplicationContext(), notification);
+                            r.play();
+
+                            depX = 3000*Math.cos(random.nextInt()%90);
                             depXtest = depX.intValue();
-                            depY = -3000*Math.sin(45);
+                            depY = -3000*Math.sin(random.nextInt()%90);
                             depYtest = depY.intValue();
                             Log.d("la", position[0] + depXtest + "");
                             image.setX(position[0]);
@@ -120,7 +126,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Sens
                             launch(originalPosition[0] + depXtest,originalPosition[1] + depYtest,3000);
                         }  else  if (position[0] >= screenWidth - image.getWidth()){//mur droite
                             Log.d("lol" , position[0] + " ici " + position[1] );
-                            depX = -3000*Math.cos(135);
+                            depX = -3000*Math.cos(45);
                             depXtest = depX.intValue();
                             depY = 3000*Math.sin(45);
                             depYtest = depY.intValue();
@@ -129,7 +135,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Sens
                             launch(originalPosition[0] + depXtest,originalPosition[1] + depYtest, 3000);
                         } else if (position[0] <=   0) {//mur gauche
                             Log.d("la" , position[0] + " ici " + position[1] );
-                            depX = -3000*Math.cos(45);
+                            depX = 3000*Math.cos(45);
                             depXtest = depX.intValue();
                             depY = 3000*Math.sin(45);
                             depYtest = depY.intValue();
@@ -141,7 +147,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Sens
                             Log.d("merde" , position[0] + " ici " + position[1] );
                             depX = 3000*Math.cos(45);
                             depXtest = depX.intValue();
-                            depY = -3000*Math.sin(45);
+                            depY = 3000*Math.sin(45);
                             depYtest = depY.intValue();
                             image.setX(position[0]);
                             image.setY(position[1]);
