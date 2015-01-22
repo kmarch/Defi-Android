@@ -3,6 +3,10 @@ package m2dl.com.defiandroid;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -10,8 +14,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.net.Socket;
 import java.util.Set;
+import java.util.UUID;
 
 
 public class MainActivity extends Activity {
@@ -22,6 +29,15 @@ public class MainActivity extends Activity {
     BluetoothDevice htcC;
     BluetoothDevice nexusDevice;
     BluetoothDevice oneplusDevice;
+
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            TextView azerty = (TextView) findViewById(R.id.tvt);
+
+            azerty.setText(intent.getExtras().getString("test"));
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,11 +83,13 @@ public class MainActivity extends Activity {
 //                        this.htcC=device;
 //                        System.out.println("HTCC FOUND");
 //                    }
-                      if (device.getName().equals("Galaxy Nexus 2")) {
+                      if (device.getName().equals("Nexus 5")) {
+                          System.out.println("test 1"+device.getName());
                           this.nexusDevice = device;
                           clientBT(findViewById(R.id.tvt));
                       }
                       if (device.getName().equals("OnePlus One")) {
+                          System.out.println("test 2"+device.getName());
                           this.oneplusDevice=device;
                           serverBT(findViewById(R.id.tvt));
                       }
@@ -79,7 +97,6 @@ public class MainActivity extends Activity {
                 }
                 tv.setText(s);
             }
-
 
         }
     }
