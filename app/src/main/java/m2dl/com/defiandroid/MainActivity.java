@@ -1,33 +1,38 @@
 package m2dl.com.defiandroid;
 
-import android.app.Activity;
-import android.content.DialogInterface;
+
+import android.graphics.Color;
 import android.graphics.Point;
-import android.os.Handler;
-import android.support.v7.app.ActionBarActivity;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.app.Activity;
+import android.content.Context;
 import android.util.Log;
 import android.view.Display;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
-
-public class MainActivity extends Activity implements View.OnTouchListener{
-
+public class MainActivity extends Activity implements SensorEventListener,View.OnTouchListener {
+    private SensorManager mSensorMgr;
+    private ImageView image;
+    private Sensor mLight;
+    private float coord_x;
     private int screenWidth;
     private int screenHeight;
     private int _xDelta;
     private int _yDelta;
     private ImageView image;
-    private Handler mHandler ;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Display display = getWindowManager().getDefaultDisplay();
@@ -65,27 +70,42 @@ public class MainActivity extends Activity implements View.OnTouchListener{
         anim.setDuration(speed);
         anim.setFillAfter( true );
         image.startAnimation(anim);
+        image = (ImageView) findViewById (R.id.imageView);
+        mSensorMgr = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mLight = mSensorMgr.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
+
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
+    public void onAccuracyChanged(Sensor arg0, int arg1) {
+
+
+    }
+
+    public void move(float x){
+        coord_x = image.getX() + (x*200);
+        image.setX(coord_x);
+
+
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+    public void onSensorChanged(SensorEvent event) {
+        float lat = event.values[0];
+        move(lat);
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+    }
+
+
+@Override
+protected void onResume(){
+        super.onResume();
+        mSensorMgr.registerListener(this, mLight, SensorManager.SENSOR_DELAY_NORMAL);
         }
 
-        return super.onOptionsItemSelected(item);
-    }
+@Override
+protected void onPause(){
+        super.onPause();
+        mSensorMgr.unregisterListener(this);
+        }
 }
